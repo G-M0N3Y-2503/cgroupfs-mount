@@ -41,6 +41,14 @@ for sys in $(awk '!/^#/ { if ($4 == 1) print $1 }' /proc/cgroups); do
 	fi
 done
 
+# mount systemd as containers use it even if the host dosen't
+mkdir -p /sys/fs/cgroup/systemd
+if ! mountpoint -q /sys/fs/cgroup/systemd; then
+	if ! mount -n -t cgroup -o none,name=systemd cgroup /sys/fs/cgroup/systemd; then
+		rmdir /sys/fs/cgroup/systemd || true
+	fi
+fi
+
 if [ -e /sys/fs/cgroup/memory/memory.use_hierarchy ]; then
 	echo 1 > /sys/fs/cgroup/memory/memory.use_hierarchy
 fi
